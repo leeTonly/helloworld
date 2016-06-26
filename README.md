@@ -59,13 +59,14 @@ remote: Total 10 (delta 1), reused 0 (delta 0), pack-reused 0
 lee@lee-W675SJ:~/Coding/git_helloworld$ git config --global user.name lee
 lee@lee-W675SJ:~/Coding/git_helloworld$ git config --global user.email 772662623@qq.com
 lee@lee-W675SJ:~/Coding/git_helloworld$ git config --global github.user leeTonlylee@lee-W675SJ:~/Coding/git_helloworld$ git config --global github.token 7e09ba0452a1991253e34990ae3c66a61f8e0bc4
+lee@lee-W675SJ:~/Coding/git_helloworld/helloworld$ git config --global push.default simple
 
 lee@lee-W675SJ:~/Coding/git_helloworld$ git remote add origin git@github.com:leeTonly/helloworld.git
 
 
 ###7. 上传代码
 lee@lee-W675SJ:~/Coding/git_helloworld$ git add git的使用方法.c 
-lee@lee-W675SJ:~/Coding/git_helloworld$ git commit -m git的使用方法.c 
+lee@lee-W675SJ:~/Coding/git_helloworld$ git commit -a
 [master （根提交） 7fb7f0c] git的使用方法.c
  1 file changed, 50 insertions(+)
  create mode 100644 "git\347\232\204\344\275\277\347\224\250\346\226\271\346\263\225.c"
@@ -79,9 +80,11 @@ Total 2 (delta 1), reused 0 (delta 0)
 To git@github.com:leeTonly/helloworld.git
    45b7913..6a3c99e  master -> master
 
+git commit -m为手动commit，可指定文件上传，而-a为自动上传.
+
 
 ###8. 更新代码
-lee@lee-W675SJ:~/Coding/git_helloworld/helloworld$ git push origin master
+lee@lee-W675SJ:~/Coding/git_helloworld/helloworld$ git push
 对象计数中: 3, 完成.
 Delta compression using up to 8 threads.
 压缩对象中: 100% (2/2), 完成.
@@ -92,13 +95,11 @@ To git@github.com:leeTonly/helloworld.git
 
 
 ###9. 删除代码
-lee@lee-W675SJ:~/Coding/git_helloworld/helloworld$ git rm 1111 
-rm '1111'
 lee@lee-W675SJ:~/Coding/git_helloworld/helloworld$ git commit -m 1111
 [master 6a3c99e] 1111
  1 file changed, 0 insertions(+), 0 deletions(-)
  delete mode 100644 1111
-lee@lee-W675SJ:~/Coding/git_helloworld/helloworld$ git push origin master
+lee@lee-W675SJ:~/Coding/git_helloworld/helloworld$ git push
 对象计数中: 2, 完成.
 Delta compression using up to 8 threads.
 压缩对象中: 100% (2/2), 完成.
