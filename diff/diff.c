@@ -21,48 +21,47 @@ typedef struct _FileStruct
 	char sCurLine[1024];
 	int iCurLineNo;
 	char bisEnd;
+	long iFilePointBk;
 }t_FileStruct;
 
 typedef struct _FileAdd
 {
-	char sAddLines[32][1024];
+	char sAddLines[1024][1024];
 
-	int iFilePointBk;
-	int iFilePointCur;
+	// int iFilePointBk;
+	// int iFilePointCur;
 
-	char bAddStartLine;
-	char bAddEndLine;
+	int bAddStartLine;
+	int bAddEndLine;
 }t_FileAdd;
 
 typedef struct _FileDel
 {
-	char sDelLines[32][1024];
+	char sDelLines[1024][1024];
 
-	int iFilePointBk;
-	int iFilePointCur;
+	// int iFilePointBk;
+	// int iFilePointCur;
 
-	char bSameLineNo;
-
-	char bDelStartLine;
-	char bDelEndLine;
+	int bDelStartLine;
+	int bDelEndLine;
 }t_FileDel;
 
 typedef struct _FileChange
 {
-	char sChangeLines1[32][1024];
-	char sChangeLines2[32][1024];
+	char sChangeLines1[1024][1024];
+	char sChangeLines2[1024][1024];
 
-	char bChangeStartLine1;
-	char bChangeEndLine1;
+	int bChangeStartLine1;
+	int bChangeEndLine1;
 
-	char bChangeStartLine2;
-	char bChangeEndLine2;
+	int bChangeStartLine2;
+	int bChangeEndLine2;
 
-	int iFilePointBk1;
-	int iFilePointCur1;
+	// int iFilePointBk1;
+	// int iFilePointCur1;
 
-	int iFilePointBk2;
-	int iFilePointCur2;
+	// int iFilePointBk2;
+	// int iFilePointCur2;
 }t_FileChange;
 
 /*--------------------------------- Local function declaration ------------------------------------*/
@@ -70,8 +69,8 @@ int fgLineAddHandle(char *bRunStt);
 int fgLineDelHandle(char *bRunStt);
 int fgLineChangeHandle(char *bRunStt);
 int fgLineNormalHandle(char *bRunStt);
-int fgGetCurFilePlace(FILE *fp);
-int fgSetCurFilePlace(FILE *fp, int fileplace);
+long fgGetCurFilePlace(FILE *fp);
+int fgSetCurFilePlace(FILE *fp, long fileplace);
 
 /*--------------------------------------- Global variable -----------------------------------------*/
 t_paramStruct 	g_paramStruct;
@@ -82,7 +81,7 @@ t_FileDel		g_filedel;
 t_FileChange	g_filechange;
 char 			bIsDiff;
 char 			bLineStt;
-
+int 			bSameLineNo;
 /*--------------------------------------- Global functions ----------------------------------------*/
 
 
@@ -158,7 +157,7 @@ Return:
 		Normal  fileplace
 		Error	-1
 */
-int fgGetCurFilePlace(FILE *fp)
+long fgGetCurFilePlace(FILE *fp)
 {
 	if(fp == NULL){
 		fprintf(stderr, "fgGetCurFilePlace, param is null\n");
@@ -176,7 +175,7 @@ Return:
 		Normal  0
 		Error	-1
 */
-int fgSetCurFilePlace(FILE *fp, int fileplace)
+int fgSetCurFilePlace(FILE *fp, long fileplace)
 {
 	if(fp == NULL){
 		fprintf(stderr, "fgSetCurFilePlace, param is null\n");
@@ -198,10 +197,44 @@ Return:
 */
 int fgLineAddHandle(char *bRunStt)
 {
+	int i;
+	int bstart;
+	int bend;
+
+	bstart = g_fileadd.bAddStartLine;
+	bend = g_fileadd.bAddEndLine;
+
 	if(*bRunStt != 'a'){
 		return -1;
 	}
 
+	if((bend - bstart) == 0) {
+		//printf("%da%d\n",bSameLineNo,bstart);
+		printf("%da%d\n",g_file1.iCurLineNo-1,bstart);
+		printf("> %s", g_fileadd.sAddLines[0]);
+
+	}else if((bend - bstart) > 0) {
+		//printf("%da%d,%d\n",bSameLineNo, bstart, bend);
+		printf("%da%d,%d\n",g_file1.iCurLineNo-1, bstart, bend);
+		for(i=0; i< bend - bstart + 1; i++)	{
+			printf("> %s", g_fileadd.sAddLines[i]);
+		}
+	}
+#if DEBUG
+	sleep(1);
+#endif
+	memset(g_fileadd.sAddLines, 0, 32*1024);
+	g_fileadd.bAddStartLine = 1;
+	g_fileadd.bAddEndLine = 1;
+
+// #if DEBUG
+// 	printf("g_file1.iCurLineNo=%d, g_file2.iCurLineNo=%d\n", g_file1.iCurLineNo, g_file2.iCurLineNo);
+// #endif
+
+	bSameLineNo++;
+
+	*bRunStt = 'r';
+	bLineStt = 0;
 
 	return 0;
 }
@@ -218,8 +251,8 @@ Return:
 int fgLineDelHandle(char *bRunStt)
 {
 	int i;
-	char bstart;
-	char bend;
+	int bstart;
+	int bend;
 
 	bstart = g_filedel.bDelStartLine;
 	bend = g_filedel.bDelEndLine;
@@ -229,11 +262,11 @@ int fgLineDelHandle(char *bRunStt)
 	}
 
 	if((bend - bstart) == 0) {
-		printf("%dd%d\n",bstart,g_filedel.bSameLineNo);
+		printf("%dd%d\n",bstart,bSameLineNo);
 		printf("< %s", g_filedel.sDelLines[0]);
 
 	}else if((bend - bstart) > 0) {
-		printf("%d,%dd%d\n", bstart, bend,g_filedel.bSameLineNo);
+		printf("%d,%dd%d\n", bstart, bend,bSameLineNo);
 		for(i=0; i< bend - bstart + 1; i++)
 		{
 			printf("< %s", g_filedel.sDelLines[i]);
@@ -250,6 +283,8 @@ int fgLineDelHandle(char *bRunStt)
 //#if DEBUG
 	//printf("g_file1.iCurLineNo=%d, g_file2.iCurLineNo=%d\n", g_file1.iCurLineNo, g_file2.iCurLineNo);
 //#endif
+
+	bSameLineNo++;
 
 	*bRunStt = 'r';
 	bLineStt = 0;
@@ -295,17 +330,26 @@ int fgLineNormalHandle(char *bRunStt)
 	}
 
 	if(bLineStt == 'd'){	/*Check if is del mode*/
-		// g_filedel.iFilePointCur = fgGetCurFilePlace(g_file1.fp);
-
 		memset(g_file1.sCurLine, 0, 1024);
 
 		if(fgets(g_file1.sCurLine, 1024, g_file1.fp) == NULL){
 			if(feof(g_file1.fp) && !g_file2.bisEnd){
 				/*file1 is end but cannot find a line which same with the line of file2*/
 				bLineStt = 'a';
+				strcpy(g_file1.sCurLine, g_filedel.sDelLines[0]);
+				memset(g_filedel.sDelLines, 0, 32*1024);
+				g_file1.iCurLineNo = g_filedel.bDelStartLine;
+
+				g_filedel.bDelStartLine = 1;
+				g_filedel.bDelEndLine = 1;	
+				g_file1.bisEnd = 0;
+				g_file2.bisEnd = 0;	
+				fgSetCurFilePlace(g_file1.fp, g_file1.iFilePointBk);
+				fgSetCurFilePlace(g_file2.fp, g_file2.iFilePointBk);
 
 				return 0;
 			}else if(g_file2.bisEnd){
+
 				*bRunStt = 'd';
 				return 0;
 			}
@@ -313,13 +357,21 @@ int fgLineNormalHandle(char *bRunStt)
 
 		/*If file2 already end, all remain lines of file1 need removed*/
 		if(g_file2.bisEnd){
+
 			g_filedel.bDelEndLine++;
 			strcpy(g_filedel.sDelLines[g_filedel.bDelEndLine - g_filedel.bDelStartLine], g_file1.sCurLine);			
 		}else if(strcmp(g_file1.sCurLine, g_file2.sCurLine) == 0){
-			//g_filedel.bSameLineNo++;
-			/*the lines are the same, so the lines between FilePointBk and FilePointCur need to be removed*/
+#if DEBUG
+			printf("@@%s@@%s", g_file1.sCurLine,g_file2.sCurLine);
+			printf("####%d,####%d\n", g_file1.iCurLineNo,g_file2.iCurLineNo);
+#endif
+			/*the lines are same, so the lines between startline and endline need to be removed*/
 			*bRunStt = 'd';
 		}else{
+#if DEBUG
+			printf("@@%s@@%s", g_file1.sCurLine,g_file2.sCurLine);
+			printf("####%d,####%d\n", g_file1.iCurLineNo,g_file2.iCurLineNo);
+#endif
 			g_filedel.bDelEndLine++;
 			strcpy(g_filedel.sDelLines[g_filedel.bDelEndLine - g_filedel.bDelStartLine], g_file1.sCurLine);
 		}
@@ -327,24 +379,66 @@ int fgLineNormalHandle(char *bRunStt)
 		g_file1.iCurLineNo++;		
 
 	}else if(bLineStt == 'a'){	/*Check if add mode*/
+		memset(g_file2.sCurLine, 0 ,1024);
 
+		if(fgets(g_file2.sCurLine, 1024, g_file2.fp) == NULL){
+			if(feof(g_file2.fp) && !g_file1.bisEnd){
+				/*file2 is end but cannot find a line which same with the line of line1*/
+				bLineStt = 'c';
+
+				memset(g_fileadd.sAddLines, 0, 32*1024);
+				g_file1.iCurLineNo = g_filechange.bChangeStartLine1;
+				g_file2.iCurLineNo = g_filechange.bChangeStartLine2;
+				g_fileadd.bAddStartLine = 1;
+				g_fileadd.bAddEndLine = 1;
+				fgSetCurFilePlace(g_file1.fp, g_file1.iFilePointBk);
+				fgSetCurFilePlace(g_file2.fp, g_file2.iFilePointBk);
+
+				return 0;
+			}else if(g_file1.bisEnd){
+				*bRunStt = 'a';
+
+				return 0;
+			}
+		}
+
+		/*If file1 already end, all remain lines of file2 need add*/
+		if(g_file1.bisEnd)
+		{
+			g_fileadd.bAddEndLine++;
+			strcpy(g_fileadd.sAddLines[g_fileadd.bAddEndLine - g_fileadd.bAddStartLine], g_file2.sCurLine);
+		}else if(strcmp(g_file1.sCurLine, g_file2.sCurLine) == 0){
+			/*the lines are same, so the lines between startline and endline need to be added*/
+			*bRunStt = 'a';
+#if DEBUG
+			printf("@@%s@@%s", g_file1.sCurLine,g_file2.sCurLine);
+			printf("####%d,####%d\n", g_file1.iCurLineNo,g_file2.iCurLineNo);
+#endif
+		}else{
+
+			g_fileadd.bAddEndLine++;
+			strcpy(g_fileadd.sAddLines[g_fileadd.bAddEndLine - g_fileadd.bAddStartLine], g_file2.sCurLine);
+		}
+
+		g_file2.iCurLineNo++;
 
 	}else if(bLineStt == 'c'){	/*Check if change mode*/
 
 
 	}else{
-		// iCurFilePoint1 = fgGetCurFilePlace(g_file1.fp);
-		// iCurFilePoint2 = fgGetCurFilePlace(g_file2.fp);
+
+		iCurFilePoint1 = fgGetCurFilePlace(g_file1.fp);
+		iCurFilePoint2 = fgGetCurFilePlace(g_file2.fp);
 
 		if(fgets(g_file1.sCurLine, 1024, g_file1.fp) == NULL) {
 			if(g_file1.iCurLineNo == 1){
 				/*file1 is empty*/
 				return -1;
 			}else if(feof(g_file1.fp)){
-				g_file1.bisEnd = 1;
 #if DEBUG
-				printf("######fgLineNormalHandle, r ,file1 is end\n");
+				printf("####file1 is end\n");
 #endif
+				g_file1.bisEnd = 1;
 			}
 		}
 		
@@ -354,26 +448,30 @@ int fgLineNormalHandle(char *bRunStt)
 				/*file2 is empty*/
 				return -1;
 			} else if(feof(g_file2.fp)){
-				g_file2.bisEnd = 1;
 #if DEBUG
-				printf("######fgLineNormalHandle, r ,file2 is end\n");
+				printf("####fil2 is end\n");
 #endif
+				g_file2.bisEnd = 1;
 			}
 		}
-
-#if DEBUG
-		printf("##%s##%s",g_file1.sCurLine, g_file2.sCurLine);
-#endif
 
 		if(strcmp(g_file1.sCurLine, g_file2.sCurLine) == 0) {
 			/*lines are same*/
 
-			g_filedel.bSameLineNo++;
+			bSameLineNo++;
+
+#if DEBUG
+			printf("@@%s@@%s", g_file1.sCurLine,g_file2.sCurLine);
+			printf("####bSameLineNo = %d\n", bSameLineNo);
+#endif
 
 			if(g_file1.bisEnd == 1 && g_file2.bisEnd == 1)
 			{
 				return END;
 			}else if(g_file1.bisEnd == 1){
+				bLineStt = 'a';
+				g_fileadd.bAddStartLine = g_file2.iCurLineNo;
+				g_fileadd.bAddEndLine = g_file2.iCurLineNo;
 				memset(g_file2.sCurLine, 0, 1024);
 				g_file2.iCurLineNo++;
 			}else if(g_file2.bisEnd == 1){
@@ -390,29 +488,37 @@ int fgLineNormalHandle(char *bRunStt)
 			}
 
 #if DEBUG
-			printf("1#####fgLineNormalHandle, CurLineNo, %d,%d\n",g_file1.iCurLineNo,g_file2.iCurLineNo);
+			printf("1#####fgLineNormalHandle,r, CurLineNo, %d,%d\n",g_file1.iCurLineNo,g_file2.iCurLineNo);
 #endif
 
 		} else {
 			// bIsDiff = 1;
-			bLineStt = 'd';
-
-			/*backup current file point*/
-			// g_filedel.iFilePointBk = iCurFilePoint1;
-			// g_fileadd.iFilePointBk = iCurFilePoint2;
-			// g_filechange.iFilePointBk1 = iCurFilePoint1;
-			// g_filechange.iFilePointBk2 = iCurFilePoint2;
+			//bLineStt = 'd';
+			strcpy(g_filedel.sDelLines[0], g_file1.sCurLine);
+			strcpy(g_fileadd.sAddLines[0], g_file2.sCurLine);
+			strcpy(g_filechange.sChangeLines1[0], g_file1.sCurLine);
+			strcpy(g_filechange.sChangeLines2[0], g_file2.sCurLine);
 
 			if(g_file1.bisEnd == 1){
+				bLineStt = 'a';
+				g_fileadd.bAddStartLine = g_file2.iCurLineNo;
+				g_fileadd.bAddEndLine = g_file2.iCurLineNo;
+				memset(g_file2.sCurLine, 0, 1024);
 				g_file2.iCurLineNo++;
 			}else if(g_file2.bisEnd == 1){
+				bLineStt = 'd';
+				g_filedel.bDelStartLine = g_file1.iCurLineNo;
+				g_filedel.bDelEndLine = g_file1.iCurLineNo;
+				memset(g_file1.sCurLine, 0, 1024);
 				g_file1.iCurLineNo++;
 			}else{
+				bLineStt = 'd';
 				g_file1.iCurLineNo++;
 				g_file2.iCurLineNo++;
 			}
 #if DEBUG
-			printf("2#####fgLineNormalHandle, CurLineNo, %d,%d\n",g_file1.iCurLineNo,g_file2.iCurLineNo);
+			printf("@@%s@@%s", g_file1.sCurLine,g_file2.sCurLine);
+			printf("2#####fgLineNormalHandle,r, CurLineNo, %d,%d\n",g_file1.iCurLineNo,g_file2.iCurLineNo);
 #endif
 			/*backup current line number*/
 			g_filedel.bDelStartLine = g_file1.iCurLineNo;
@@ -424,7 +530,9 @@ int fgLineNormalHandle(char *bRunStt)
 			g_filechange.bChangeStartLine2 = g_file2.iCurLineNo;
 			g_filechange.bChangeEndLine2 = g_file2.iCurLineNo;
 
-			strcpy(g_filedel.sDelLines[0], g_file1.sCurLine);
+			g_file1.iFilePointBk = fgGetCurFilePlace(g_file1.fp);
+			g_file2.iFilePointBk = fgGetCurFilePlace(g_file2.fp);
+
 		}
 	}
 
